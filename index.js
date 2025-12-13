@@ -638,7 +638,8 @@ app.get("/payments/:hrEmail",verifyJWT, async (req, res) => {
     res.status(500).send({ message: "Failed to fetch payments" });
   }
 });
-// Profile related API
+
+// Profile get related API
 app.get("/profile/:email", verifyJWT, async (req, res) => {
   try {
     const email = req.params.email;
