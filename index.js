@@ -483,8 +483,19 @@ app.patch("/hr/remove-employee/:employeeId",verifyJWT, async (req, res) => {
   }
 });
 
+// My Assets API for Employee
+app.get("/assigned-assets/:email",verifyJWT, async (req, res) => {
+  try {
+    const email = req.params.email;
+    const assets = await assignedAssetsCollection.find({ employeeEmail: email }).toArray();
+    res.send(assets);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send({ message: "Failed to fetch assigned assets" });
+  }
+});
 
-
+// Assigned Asset APi
 app.post("/assigned-assets",verifyJWT, async (req, res) => {
   try {
     const {
