@@ -126,7 +126,7 @@ app.patch("/users/:email", async (req, res) => {
 // GET all assets
 app.get("/assets",verifyJWT, async (req, res) => {
   try {
-    const assets = await assetsCollection.find().toArray();
+    const assets = await assetsCollection.find().sort({ _id: -1 }).toArray();
     res.status(200).json(assets);
   } catch (err) {
     console.error(err);
