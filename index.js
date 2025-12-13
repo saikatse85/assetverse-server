@@ -717,7 +717,7 @@ app.put("/profile/update/:email", verifyJWT, async (req, res) => {
   }
 });
 //Hr analytics api 
-app.get("/analytics/asset-types", verifyJWT, async (req, res) => {
+app.get("/asset-types", verifyJWT, async (req, res) => {
   const assets = await assetsCollection.find().toArray();
 
   const returnable = assets.filter(
@@ -734,7 +734,7 @@ app.get("/analytics/asset-types", verifyJWT, async (req, res) => {
   ]);
 });
 
-app.get("/analytics/top-assets", verifyJWT, async (req, res) => {
+app.get("/top-assets", verifyJWT, async (req, res) => {
   const requests = await requestsCollection.find().toArray();
 
   const map = {};
