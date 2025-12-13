@@ -546,7 +546,7 @@ app.post("/assigned-assets",verifyJWT, async (req, res) => {
       { $set: { requestStatus: "approved", approvalDate: new Date(), processedBy: hrEmail } }
     );
 
-    // Check if employee is already affiliated with this company
+    // Check employee is already affiliated with this company
     const existingAffiliation = await employeeAffiliationsCollection.findOne({
       employeeEmail,
       hrEmail,
@@ -565,7 +565,7 @@ app.post("/assigned-assets",verifyJWT, async (req, res) => {
         hrEmail,
         role,
         companyName,
-        companyLogo: "", // optional, if you have company logo
+        companyLogo: "", 
         affiliationDate: new Date(),
         status: "active",
       });
