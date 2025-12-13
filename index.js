@@ -300,8 +300,53 @@ app.get("/verify-payment", async (req, res) => {
   }
 });
 // Request Collection Create
+app.post("/requests", async (req, res) => {
+  try {
+    const request = req.body;
 
+    const requiredFields = [
+      "assetId",
+      "assetName",
+      "assetType",
+      "requesterEmail",
+      "requesterName",
+      "hrEmail",
+      "companyName",
+      "assetImage",
+      "employeeImage"
+    ];
 
+    // Validation
+    for (const field of requiredFields) {
+      if (!request[field]) {
+        return res.status(400).send({ message: `${field} is required` });
+      }
+    }
+
+    //image fetch
+    const asset = await assetsCollection.findOne(
+      { _id: new ObjectId(request.assetId) },
+      { projection: { productImage: 1 } } 
+    );
+
+    request.assetImage = request?.assetImage || asset?.productImage || "";
+
+    request.requestStatus = "pending";
+    request.requestDate = new Date();
+
+    const result = await requestsCollection.insertOne(request);
+
+    res.status(201).send({
+      success: true,
+      message: "Request created successfully",
+      requestId: result.insertedId
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).send({ message: "Failed to create request", error: err.message });
+  }
+});
 
 // GET fetch all asset requests
 app.get("/requests",verifyJWT, async (req, res) => {
@@ -313,6 +358,7 @@ app.get("/requests",verifyJWT, async (req, res) => {
     res.status(500).send({ message: "Failed to fetch requests", error: err.message });
   }
 });
+
 app.patch("/requests/approve/:id",verifyJWT, async (req, res) => {
   const { id } = req.params;
   try {
