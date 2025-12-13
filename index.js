@@ -419,7 +419,50 @@ app.patch("/requests/reject/:id",verifyJWT, async (req, res) => {
 });
 
 
+app.get("/hr/employees/:hrEmail",verifyJWT, async (req, res) => {
+  try {
+    const hrEmail = req.params.hrEmail;
 
+    // Get employees under this HR
+    const affiliations = await employeeAffiliationsCollection
+      .find({
+            $or: [
+              { hrEmail: hrEmail },
+              { employeeEmail: hrEmail }
+                  ],
+              status: "active"
+            })
+            .toArray();
+
+    // Merge user info + asset count
+    const employeesData = await Promise.all(
+      affiliations.map(async (emp) => {
+        const userData = await usersCollection.findOne({ email: emp.employeeEmail });
+
+        const assetsCount = await assignedAssetsCollection.countDocuments({
+          employeeEmail: emp.employeeEmail,
+        });
+
+        return {
+          _id: emp._id,
+          employeeName: emp.employeeName || userData?.name,
+          employeeEmail: emp.employeeEmail,
+          employeeImage: emp.employeeImage || userData?.photoURL || "",
+          position: emp.position || userData?.position || "Employee",
+          dateOfBirth: emp.dateOfBirth || userData?.dateOfBirth || null,
+          joinDate: emp.createdAt || userData?.createdAt || null,
+          companyName: emp.companyName,
+          assetsCount,
+        };
+      })
+    );
+
+    res.status(200).send(employeesData);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send({ message: "Failed to fetch employees", error: err.message });
+  }
+});
 
 // PATCH /hr/remove-employee/:id
 app.patch("/hr/remove-employee/:employeeId",verifyJWT, async (req, res) => {
