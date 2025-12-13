@@ -362,17 +362,17 @@ app.get("/requests",verifyJWT, async (req, res) => {
 app.patch("/requests/approve/:id",verifyJWT, async (req, res) => {
   const { id } = req.params;
   try {
-    // 1️⃣ Find the request first
+    // Find the request first
     const request = await requestsCollection.findOne({ _id: new ObjectId(id) });
     if (!request) return res.status(404).send({ message: "Request not found" });
 
-    // 2️⃣ Update request status
+    // Update request status
     await requestsCollection.updateOne(
       { _id: new ObjectId(id) },
       { $set: { requestStatus: "approved", approvedAt: new Date() } }
     );
 
-    // 3️⃣ Add employee to employeeAffiliations collection
+    // Add employee to employeeAffiliations collection
     const affiliationData = {
       employeeEmail: request.requesterEmail,
       employeeName: request.requesterName,
