@@ -20,6 +20,7 @@ app.use(
     origin: [
       'http://localhost:5173',
       'http://localhost:5174',
+      'https://assignment-11-839b6.web.app'
     ],
     credentials: true,
     optionSuccessStatus: 200,
@@ -103,7 +104,7 @@ app.post('/users',verifyJWT, async (req, res) => {
   }
 });
 // update Users
-app.patch("/users/:email", async (req, res) => {
+app.patch("/users/:email",verifyJWT, async (req, res) => {
   try {
     const usersCollection = client.db("assetverseDB").collection("users");
     const email = req.params.email;
@@ -685,10 +686,10 @@ app.put("/profile/update/:email", verifyJWT, async (req, res) => {
 
 
     // Send a ping to confirm a successful connection
-    await client.db('admin').command({ ping: 1 })
-    console.log(
-      'Pinged your deployment. You successfully connected to MongoDB!'
-    )
+    // await client.db('admin').command({ ping: 1 })
+    // console.log(
+    //   'Pinged your deployment. You successfully connected to MongoDB!'
+    // )
   } finally {
     // Ensures that the client will close when you finish/error
   }
