@@ -140,7 +140,7 @@ app.post('/assets',verifyJWT, async (req, res) => {
   try {
     const asset = req.body;
 
-    // Validate required fields
+    
     const requiredFields = [
       "productName",
       "productImage",
@@ -156,7 +156,7 @@ app.post('/assets',verifyJWT, async (req, res) => {
       }
     }
 
-    // Set availableQuantity if not provided
+    
     if (!asset.availableQuantity) {
       asset.availableQuantity = parseInt(asset.productQuantity);
     }
