@@ -125,15 +125,40 @@ app.patch("/users/:email",verifyJWT, async (req, res) => {
 });
 
 // GET all assets
-app.get("/assets",verifyJWT, async (req, res) => {
+app.get("/assets", verifyJWT, async (req, res) => {
   try {
-    const assets = await assetsCollection.find().sort({ _id: -1 }).toArray();
-    res.status(200).json(assets);
+    // Get page & limit from query params (default: page=1, limit=10)
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+
+    const skip = (page - 1) * limit;
+
+    // Total count for pagination
+    const total = await assetsCollection.countDocuments();
+
+    // Fetch page-wise assets
+    const assets = await assetsCollection
+      .find()
+      .sort({ _id: -1 })
+      .skip(skip)
+      .limit(limit)
+      .toArray();
+
+    const totalPages = Math.ceil(total / limit);
+
+    res.status(200).json({
+      assets,
+      total,
+      page,
+      limit,
+      totalPages,
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Failed to fetch assets", error: err.message });
   }
 });
+
 
 
 // add asset post
@@ -690,6 +715,39 @@ app.put("/profile/update/:email", verifyJWT, async (req, res) => {
   } catch (err) {
     res.status(500).send({ message: "Failed to update profile", error: err.message });
   }
+});
+//Hr analytics api 
+app.get("/analytics/asset-types", verifyJWT, async (req, res) => {
+  const assets = await assetsCollection.find().toArray();
+
+  const returnable = assets.filter(
+    a => a.productType === "Returnable"
+  ).length;
+
+  const nonReturnable = assets.filter(
+    a => a.productType === "Non-returnable"
+  ).length;
+
+  res.send([
+    { type: "Returnable", count: returnable },
+    { type: "Non-returnable", count: nonReturnable },
+  ]);
+});
+
+app.get("/analytics/top-assets", verifyJWT, async (req, res) => {
+  const requests = await requestsCollection.find().toArray();
+
+  const map = {};
+  requests.forEach(req => {
+    map[req.assetName] = (map[req.assetName] || 0) + 1;
+  });
+
+  const result = Object.entries(map)
+    .map(([name, requests]) => ({ name, requests }))
+    .sort((a, b) => b.requests - a.requests)
+    .slice(0, 5);
+
+  res.send(result);
 });
 
 
