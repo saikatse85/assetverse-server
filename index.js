@@ -222,12 +222,12 @@ app.delete('/assets/:id', verifyJWT, async (req, res) => {
   }
 });
 
-
   // GET available packages 
     app.get("/packages", async (req, res) => {
       const packages = await packagesCollection.find().toArray();
       res.json(packages);
     });
+
 // payment section api
 app.post("/create-payment-session", async (req, res) => {
   const { email, packageName, price, employeeLimit } = req.body;
@@ -248,7 +248,7 @@ app.post("/create-payment-session", async (req, res) => {
         },
       ],
 
-      //send metadata any
+      
       metadata: {
         packageName,
         employeeLimit: employeeLimit,
