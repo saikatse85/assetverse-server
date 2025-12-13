@@ -80,7 +80,7 @@ app.get("/users/email/:email",  async (req, res) => {
 });
 
 // POST new user
-app.post('/users', async (req, res) => {
+app.post('/users',verifyJWT, async (req, res) => {
   try {
     const user = req.body;
     
@@ -420,22 +420,35 @@ app.patch("/requests/reject/:id",verifyJWT, async (req, res) => {
 });
 
 
-app.get("/hr/employees/:hrEmail",verifyJWT, async (req, res) => {
+app.get("/hr/employees/:email", verifyJWT, async (req, res) => {
   try {
-    const hrEmail = req.params.hrEmail;
+    const email = req.params.email;
 
-    // Get employees under this HR
-    const affiliations = await employeeAffiliationsCollection
-      .find({
-            $or: [
-              { hrEmail: hrEmail },
-              { employeeEmail: hrEmail }
-                  ],
-              status: "active"
-            })
-            .toArray();
+    const user = await usersCollection.findOne({ email });
 
-    // Merge user info + asset count
+    let affiliations = [];
+
+    if (user.role === "hr") {
+      // HR → all employees under him
+      affiliations = await employeeAffiliationsCollection.find({
+        hrEmail: email,
+        status: "active",
+      }).toArray();
+    } else {
+      // Employee → team per company
+      const myCompanies = await employeeAffiliationsCollection.find({
+        employeeEmail: email,
+        status: "active",
+      }).toArray();
+
+      const companyNames = myCompanies.map(c => c.companyName);
+
+      affiliations = await employeeAffiliationsCollection.find({
+        companyName: { $in: companyNames },
+        status: "active",
+      }).toArray();
+    }
+
     const employeesData = await Promise.all(
       affiliations.map(async (emp) => {
         const userData = await usersCollection.findOne({ email: emp.employeeEmail });
@@ -458,10 +471,9 @@ app.get("/hr/employees/:hrEmail",verifyJWT, async (req, res) => {
       })
     );
 
-    res.status(200).send(employeesData);
+    res.send(employeesData);
   } catch (err) {
-    console.error(err);
-    res.status(500).send({ message: "Failed to fetch employees", error: err.message });
+    res.status(500).send({ message: err.message });
   }
 });
 
