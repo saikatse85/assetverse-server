@@ -80,7 +80,7 @@ app.get("/users/email/:email",  async (req, res) => {
 });
 
 // POST new user
-app.post('/users',verifyJWT, async (req, res) => {
+app.post('/users', async (req, res) => {
   try {
     const user = req.body;
     
