@@ -269,7 +269,7 @@ app.get("/verify-payment", async (req, res) => {
   try {
     const session_id = req.query.session_id;
     const session = await stripe.checkout.sessions.retrieve(session_id);
-    // Already saved or not
+    // Already saved or not payment checking 
     const existing = await paymentsCollection.findOne({
       transactionId: session.payment_intent,
     });
