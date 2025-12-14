@@ -80,7 +80,7 @@ app.get("/users/email/:email",  async (req, res) => {
 });
 
 // POST new user
-app.post('/users',verifyJWT, async (req, res) => {
+app.post('/users', async (req, res) => {
   try {
     const user = req.body;
     
@@ -681,17 +681,26 @@ app.get("/payments/:hrEmail",verifyJWT, async (req, res) => {
 app.get("/profile/:email", verifyJWT, async (req, res) => {
   try {
     const email = req.params.email;
+
+    // Get user
     const user = await usersCollection.findOne({ email });
+    if (!user) return res.status(404).send({ message: "User not found" });
 
-    if (!user) {
-      return res.status(404).send({ message: "User not found" });
-    }
-
-    res.status(200).send(user);
+    // Get company affiliations
+    const affiliationsData = await employeeAffiliationsCollection
+      .find({ employeeEmail: email, status: "active" })
+      .toArray();
+    console.log(affiliationsData);
+    
+    const affiliations = affiliationsData.map((a) => a.companyName);
+    console.log(affiliations);
+    
+    res.status(200).send({ ...user, affiliations });
   } catch (err) {
     res.status(500).send({ message: "Failed to fetch profile", error: err.message });
   }
 });
+
 //Profile Update Route
 app.put("/profile/update/:email", verifyJWT, async (req, res) => {
   try {
